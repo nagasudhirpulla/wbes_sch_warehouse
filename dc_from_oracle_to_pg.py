@@ -1,6 +1,8 @@
 import cx_Oracle
 import datetime as dt
 import os
+import pandas as pd
+
 
 def getWbesReadOnlyConnStr():
     source_db_username = os.getenv(
@@ -21,7 +23,7 @@ def getWbesReadOnlyConnStr():
     return oracle_connection_string
 
 
-def getDcRowsBetweenDates(from_dt, to_dt):
+def getDcDfBetweenDates(from_dt, to_dt):
     sqlTxt = '''select table1.*, table2.acronym, table2.util_type_id, table2.isgs_type_id from 
     (SELECT util_id, declared_for_date, DECLARED_ON_BAR, SELLER_ONBAR_IP, ON_BAR_INSTALLED_CAPACITY, CLOSED_CYCLE_ON_BAR, OPEN_CYCLE_ON_BAR, DECLARED_OFF_BAR, ramp_up, ramp_down FROM WBES_OLD.declaration where (util_id, declared_for_date, revision_no) in 
     (
@@ -40,14 +42,77 @@ def getDcRowsBetweenDates(from_dt, to_dt):
     oracle_connection_string = getWbesReadOnlyConnStr()
     con = cx_Oracle.connect(oracle_connection_string)
     cur = con.cursor()
-    cur.prepare(sqlTxt)
-    cur.execute(None, {'from_date_key': from_date_key,
-                       'to_date_key': to_date_key})
-    res = cur.fetchall()
-    cur.close()
-    return res
+    res = None
+    try:
+        cur.prepare(sqlTxt)
+        cur.execute(None, {'from_date_key': from_date_key,
+                           'to_date_key': to_date_key})
+        colNames = [x[0] for x in cur.description]
+        curRows = cur.fetchall()
+        res = pd.DataFrame(curRows, columns=colNames)
+    finally:
+        if cur is not None:
+            cur.close()
+        return res
 
 
-from_dt = dt.datetime(2019, 7, 2)
-to_dt = dt.datetime(2019, 7, 2)
-x = getDcRowsBetweenDates(from_dt, to_dt)
+"""
+For thermal isgs, util_id=2, isgs_type_id=1. For other isgs, util_id=2, isgs_type_id!=1. For gas, util_id=13.
+"""
+def convertDcDfToDbRows(dcDf):
+    dbRows = []
+    for dcRowIter in range(len(dcDf)):
+        dcRow = dcDf.iloc[dcRowIter]
+        utilName = dcRow['ACRONYM'].replace(" ", "_")
+        utilTypeId = dcRow['UTIL_TYPE_ID']
+        isgsTypeId = dcRow['ISGS_TYPE_ID']
+        dcDate = dcRow['DECLARED_FOR_DATE']
+        dcDateStr = dt.datetime.strftime(dcDate, '%Y-%m-%d')
+        onBarDcForSch = [float(x) for x in dcRow['DECLARED_ON_BAR'].split(',')]
+        rampUps = [float(x) for x in dcRow['RAMP_UP'].split(',')]
+        rampDowns = [float(x) for x in dcRow['RAMP_DOWN'].split(',')]
+        # check for None values
+        if utilName == None or dcDate == None or len(onBarDcForSch) != 96 or len(rampUps) != 96 or len(rampDowns) != 96:
+            continue
+        for blk in range(96):
+            dbRows.append({'util_name': utilName, 'sch_type': 'onBarForSch',
+                           'sch_date': dcDateStr, 'block': blk+1, 'val': onBarDcForSch[blk]})
+            dbRows.append({'util_name': utilName, 'sch_type': 'rampUp',
+                           'sch_date': dcDateStr, 'block': blk+1, 'val': rampUps[blk]})
+            dbRows.append({'util_name': utilName, 'sch_type': 'rampDn',
+                           'sch_date': dcDateStr, 'block': blk+1, 'val': rampDowns[blk]})
+        # get off bar dc values for generators with isgs type 1 or None
+        if utilTypeId == 1 or isgsTypeId == None:
+            offBarVals = [float(x)
+                          for x in dcRow['DECLARED_OFF_BAR'].split(',')]
+            for blk in range(96):
+                dbRows.append({'util_name': utilName, 'sch_type': 'offBar',
+                               'sch_date': dcDateStr, 'block': blk+1, 'val': offBarVals[blk]})
+        # check if the generator is gas and get open cycle and closed cycle onbar values
+        if utilTypeId == 13:
+            closedOnBarVals = [
+                float(x) for x in dcRow['CLOSED_CYCLE_ON_BAR'].split(',')]
+            openOnBarVals = [float(x)
+                             for x in dcRow['OPEN_CYCLE_ON_BAR'].split(',')]
+            for blk in range(96):
+                dbRows.append({'util_name': utilName, 'sch_type': 'ccOnBar',
+                               'sch_date': dcDateStr, 'block': blk+1, 'val': closedOnBarVals[blk]})
+                dbRows.append({'util_name': utilName, 'sch_type': 'ocOnBar',
+                               'sch_date': dcDateStr, 'block': blk+1, 'val': openOnBarVals[blk]})
+        # check if the generator is isgs thermal and get seller dc and onbar installed capacity values
+        if utilTypeId == 2 and isgsTypeId == 1:
+            sellerOnBarVals = [float(x)
+                               for x in dcRow['SELLER_ONBAR_IP'].split(',')]
+            installedOnBarVals = [
+                float(x) for x in dcRow['ON_BAR_INSTALLED_CAPACITY'].split(',')]
+            for blk in range(96):
+                dbRows.append({'util_name': utilName, 'sch_type': 'sellOnBar',
+                               'sch_date': dcDateStr, 'block': blk+1, 'val': sellerOnBarVals[blk]})
+                dbRows.append({'util_name': utilName, 'sch_type': 'icOnBar',
+                               'sch_date': dcDateStr, 'block': blk+1, 'val': installedOnBarVals[blk]})
+    return dbRows
+
+def getDcDbRowsForDates(from_dt, to_dt):
+    dcDf = getDcDfBetweenDates(from_dt, to_dt)
+    dbRows = convertDcDfToDbRows(dcDf)
+    return dbRows
