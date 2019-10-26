@@ -9,8 +9,8 @@ import datetime as dt
 from wbes_full_sch_utils import getAllIsgsSchRowsForDate
 from sch_db_adapter import SchDbAdapter
 
-from_date = dt.datetime(2018, 12, 21)
-to_date = dt.datetime(2018, 12, 31)
+from_date = dt.datetime(2018, 11, 12)
+to_date = dt.datetime(2018, 12, 30)
 
 schAdapter = SchDbAdapter()
 schAdapter.connectToDb()
@@ -19,7 +19,7 @@ for dayIter in range((to_date-from_date).days+1):
     targetDt = from_date + dt.timedelta(days=dayIter)
     schRows = getAllIsgsSchRowsForDate(targetDt, revNum=None)
     schAdapter.pushSchRows(schRows)
-    print('{0} sch push done'.format(
-        dt.datetime.strftime(targetDt, '%d-%m-%Y')))
+    print('{0} sch push done at {1}'.format(
+        dt.datetime.strftime(targetDt, '%d-%m-%Y'), dt.datetime.strftime(dt.datetime.now(), '%d-%m-%Y %H:%M')))
 schAdapter.disconnectDb()
 # print(getMaxRevForDate(targetDt))
