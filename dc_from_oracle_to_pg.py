@@ -82,7 +82,7 @@ def convertDcDfToDbRows(dcDf):
             dbRows.append({'util_name': utilName, 'sch_type': 'rampDn',
                            'sch_date': dcDateStr, 'block': blk+1, 'val': rampDowns[blk]})
         # get off bar dc values for generators with isgs type 1 or None
-        if utilTypeId == 1 or isgsTypeId == None:
+        if isgsTypeId == 1 or isgsTypeId == None:
             offBarVals = [float(x)
                           for x in dcRow['DECLARED_OFF_BAR'].split(',')]
             for blk in range(96):
