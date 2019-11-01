@@ -51,3 +51,21 @@ def getAllIsgsSchRowsForDate(targetDt, revNum=None):
     dataArray = json.loads(jsonText[1:-1])
     dataRows = convertDataArrayToSchRows(dataArray, targetDt)
     return dataRows
+
+# http://scheduling.wrldc.in/wbes/ReportNetSchedule/GetNetScheduleSummary?regionId=2&scheduleDate=01-11-2019&sellerId=ALL&revisionNumber=129&byDetails=1&isBuyer=1
+def getAllBuyerSchRowsForDate(targetDt, revNum=None):
+    rev = revNum
+    # get max rev of day if rev number not specified
+    if revNum == None:
+        rev = getMaxRevForDate(targetDt)
+    headers = getDefaultReqHeaders()
+    schUrl = "http://scheduling.wrldc.in/wbes/ReportNetSchedule/GetNetScheduleSummary?regionId=2&scheduleDate={0}&sellerId=ALL&revisionNumber={1}&byDetails=1&isBuyer=1".format(
+        dt.datetime.strftime(targetDt, '%d-%m-%Y'), rev)
+    r = requests.get(schUrl, headers=headers)
+    resText = r.text
+    # extract data array from the response
+    jsonText = re.search('var data = JSON.parse\((.*)\);', resText).group(1)
+    jsonText = jsonText.replace("\\", "")
+    dataArray = json.loads(jsonText[1:-1])
+    dataRows = convertDataArrayToSchRows(dataArray, targetDt)
+    return dataRows
