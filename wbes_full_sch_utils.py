@@ -46,9 +46,9 @@ def getAllIsgsSchRowsForDate(targetDt, revNum=None):
     r = requests.get(schUrl, headers=headers)
     resText = r.text
     # extract data array from the response
-    jsonText = re.search('var data = JSON.parse\((.*)\);', resText).group(1)
-    jsonText = jsonText.replace("\\", "")
-    dataArray = json.loads(jsonText[1:-1])
+    jsonText = re.search('var data = JSON\.parse\((.*)\);', resText).group(1)
+    # jsonText = jsonText.replace('\\', '')
+    dataArray = json.loads(eval(jsonText))
     dataRows = convertDataArrayToSchRows(dataArray, targetDt)
     return dataRows
 
