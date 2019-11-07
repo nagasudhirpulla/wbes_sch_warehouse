@@ -2,5 +2,5 @@
 
 <br/>
 <p align="center">
-  <img src="https://raw.githubusercontent.com/nagasudhirpulla/wbes_sch_warehouse/master/assets/img/wbes_archive_data_adapter_poster.png">
+  <img src="https://raw.githubusercontent.com/nagasudhirpulla/wbes_sch_warehouse/master/assets/img/wrldc_schedule_warehouse_potser.png">
 </p>
