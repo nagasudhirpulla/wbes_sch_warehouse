@@ -9,8 +9,8 @@ import datetime as dt
 from dc_from_oracle_to_pg import getDcDbRowsForDates
 from sch_db_adapter import SchDbAdapter
 
-from_date = dt.datetime(2018, 9, 1)
-to_date = dt.datetime(2019, 10, 20)
+from_date = dt.datetime(2020, 1, 1)
+to_date = dt.datetime(2020, 1, 31)
 
 schAdapter = SchDbAdapter()
 schAdapter.connectToDb()
