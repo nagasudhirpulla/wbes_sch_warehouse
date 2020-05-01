@@ -9,8 +9,8 @@ import datetime as dt
 from data_update_script import updateSchedules
 
 # nowDay = dt.datetime.now()
-nowDay = dt.datetime(2020, 1, 31)
-startDay = dt.datetime(2020, 1, 1)
+nowDay = dt.datetime(2020, 5, 1)
+startDay = dt.datetime(2020, 4, 1)
 targetDates = []
 for dayIter in range((nowDay-startDay).days+1):
     targetDt = startDay + dt.timedelta(days=dayIter)
