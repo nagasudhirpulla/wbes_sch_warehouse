@@ -20,7 +20,7 @@ nowDay = dt.datetime.now()
 dMinus1Day = nowDay - dt.timedelta(days=1)
 dMinus2Day = nowDay - dt.timedelta(days=2)
 dMinus1Month = nowDay - dt.timedelta(days=30)
-dMinus2Month = nowDay - dt.timedelta(days=60)
-targetDates = [nowDay, dMinus1Day, dMinus2Day, dMinus1Month, dMinus2Month]
+# dMinus2Month = nowDay - dt.timedelta(days=60)
+targetDates = [nowDay, dMinus1Day, dMinus2Day, dMinus1Month]
 
 updateSchedules(targetDates)
