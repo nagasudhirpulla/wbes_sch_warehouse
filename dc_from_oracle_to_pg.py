@@ -24,17 +24,17 @@ def getWbesReadOnlyConnStr():
 
 
 def getDcDfBetweenDates(from_dt, to_dt):
-    dbName = "WBES_OLD" if (
-        dt.datetime.now() - from_dt).days > 6 else "WBES_NR7"
+    dbName = "SCHOLD" if (
+        dt.datetime.now() - from_dt).days > 6 else "SCHN7"
     sqlTxt = '''select table1.*, table2.acronym, table2.util_type_id, table2.isgs_type_id from 
     (SELECT util_id, declared_for_date, DECLARED_ON_BAR, SELLER_ONBAR_IP, ON_BAR_INSTALLED_CAPACITY, CLOSED_CYCLE_ON_BAR, OPEN_CYCLE_ON_BAR, DECLARED_OFF_BAR, ramp_up, ramp_down FROM {0}.declaration where (util_id, declared_for_date, revision_no) in 
     (
         select util_id, declared_for_date, max(revision_no) from {0}.declaration 
         WHERE declared_for_date between :from_date_key and :to_date_key and is_scheduled=1
-        and util_id in (select util_id from WBES_NR7.utility where is_active = 1 and region_id=2)
+        and util_id in (select util_id from SCHN7.utility where is_active = 1 and region_id=2)
         GROUP BY util_id, declared_for_date
     )) table1
-    left join WBES_NR7.utility table2 on table1.util_id = table2.util_id
+    left join SCHN7.utility table2 on table1.util_id = table2.util_id
     order by declared_for_date, acronym'''.format(dbName)
     # from_date_key = from_dt.strftime('%Y-%m-%d')
     from_date_key = from_dt.date()

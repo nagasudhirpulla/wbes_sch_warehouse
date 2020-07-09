@@ -11,10 +11,10 @@ def getDefaultReqHeaders():
     }
 
 # get max rev for selected date
-# http://scheduling.wrldc.in/wbes/Report/GetCurrentDayFullScheduleMaxRev?regionid=2&ScheduleDate=17-10-2019
+# https://wbes.wrldc.in/Report/GetCurrentDayFullScheduleMaxRev?regionid=2&ScheduleDate=17-10-2019
 def getMaxRevForDate(revDt):
     headers = getDefaultReqHeaders()
-    revUrl = "http://scheduling.wrldc.in/wbes/Report/GetCurrentDayFullScheduleMaxRev?regionid=2&ScheduleDate={0}".format(
+    revUrl = "https://wbes.wrldc.in/Report/GetCurrentDayFullScheduleMaxRev?regionid=2&ScheduleDate={0}".format(
         dt.datetime.strftime(revDt, "%d-%m-%Y"))
     r = requests.get(revUrl, headers=headers)
     maxRevObj = r.json()

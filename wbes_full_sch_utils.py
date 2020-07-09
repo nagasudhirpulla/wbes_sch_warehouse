@@ -34,14 +34,14 @@ def convertDataArrayToSchRows(dataArray, targetDt):
     return dataRows
 
 # download all isgs sch compoenets for a date from wbes reports
-# http://scheduling.wrldc.in/wbes/ReportFullSchedule/GetFullInjSummary?scheduleDate=16-10-2019&sellerId=ALL&revisionNumber=197&regionId=2&byDetails=1&isDrawer=0&isBuyer=0
+# https://wbes.wrldc.in/ReportFullSchedule/GetFullInjSummary?scheduleDate=16-10-2019&sellerId=ALL&revisionNumber=197&regionId=2&byDetails=1&isDrawer=0&isBuyer=0
 def getAllIsgsSchRowsForDate(targetDt, revNum=None):
     rev = revNum
     # get max rev of day if rev number not specified
     if revNum == None:
         rev = getMaxRevForDate(targetDt)
     headers = getDefaultReqHeaders()
-    schUrl = "http://scheduling.wrldc.in/wbes/ReportFullSchedule/GetFullInjSummary?scheduleDate={0}&sellerId=ALL&revisionNumber={1}&regionId=2&byDetails=1&isDrawer=0&isBuyer=0".format(
+    schUrl = "https://wbes.wrldc.in/ReportFullSchedule/GetFullInjSummary?scheduleDate={0}&sellerId=ALL&revisionNumber={1}&regionId=2&byDetails=1&isDrawer=0&isBuyer=0".format(
         dt.datetime.strftime(targetDt, '%d-%m-%Y'), rev)
     r = requests.get(schUrl, headers=headers)
     resText = r.text
@@ -52,14 +52,14 @@ def getAllIsgsSchRowsForDate(targetDt, revNum=None):
     dataRows = convertDataArrayToSchRows(dataArray, targetDt)
     return dataRows
 
-# http://scheduling.wrldc.in/wbes/ReportNetSchedule/GetNetScheduleSummary?regionId=2&scheduleDate=01-11-2019&sellerId=ALL&revisionNumber=129&byDetails=1&isBuyer=1
+# https://wbes.wrldc.in/ReportNetSchedule/GetNetScheduleSummary?regionId=2&scheduleDate=01-11-2019&sellerId=ALL&revisionNumber=129&byDetails=1&isBuyer=1
 def getAllBuyerSchRowsForDate(targetDt, revNum=None):
     rev = revNum
     # get max rev of day if rev number not specified
     if revNum == None:
         rev = getMaxRevForDate(targetDt)
     headers = getDefaultReqHeaders()
-    schUrl = "http://scheduling.wrldc.in/wbes/ReportNetSchedule/GetNetScheduleSummary?regionId=2&scheduleDate={0}&sellerId=ALL&revisionNumber={1}&byDetails=1&isBuyer=1".format(
+    schUrl = "https://wbes.wrldc.in/ReportNetSchedule/GetNetScheduleSummary?regionId=2&scheduleDate={0}&sellerId=ALL&revisionNumber={1}&byDetails=1&isBuyer=1".format(
         dt.datetime.strftime(targetDt, '%d-%m-%Y'), rev)
     r = requests.get(schUrl, headers=headers)
     resText = r.text
